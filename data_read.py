@@ -16,9 +16,8 @@ import re
 import os
 from datetime import datetime
 
-# data file names
-dataFileNames = ["stores.csv", "features.csv","train.csv"]
-
+dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv"]
+fileNamesWithDiffDateFormat = ["historical_features.csv", "future_features.csv"]
 
 def read_pickled_data() -> dict:
     dataDict = {}
@@ -38,6 +37,8 @@ def pickle_data(dataToPickle: dict):
 
 #Reading data from files to generate a pandas data frame
 def dataFrameGen(fileName):
+    dateFormatString = "%m/%d/%Y" if (fileName in fileNamesWithDiffDateFormat) else "%Y-%m-%d"
+
     dataFrame = pd.read_csv(fileName, header = 0)
     #checking if a dataframe has a Date column
     if "Date" in dataFrame.columns.values:
@@ -45,8 +46,8 @@ def dataFrameGen(fileName):
         dateToWeekNumMap = {} #map dictionary for date mapping in a data frame
         for index,row in dataFrame.iterrows():# for loop to generate the map of values for the date column
             try:
-                dateToWeekNumMap[row["Date"]] = datetime.strptime(row["Date"],"%Y-%m-%d").strftime('%U')
-                value = datetime.strptime(row["Date"],"%Y-%m-%d").strftime('%U')
+                dateToWeekNumMap[row["Date"]] = datetime.strptime(row["Date"],dateFormatString).strftime('%U')
+                value = datetime.strptime(row["Date"],dateFormatString).strftime('%U')
                 row['Date'].update(row['date'], value)
             except Exception:
                 pass
@@ -67,7 +68,6 @@ def read_data() -> dict:
     return data
 
 #Example usage for pickling/unpickling
-#pickle_data(read_data())
-#data = read_pickled_data()
+# pickle_data(read_data())
+data = read_pickled_data()
 
-data = read_data()
