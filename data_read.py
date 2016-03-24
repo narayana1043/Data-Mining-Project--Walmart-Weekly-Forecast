@@ -11,9 +11,9 @@ Variables = camelCase
 
 '''
 
-import pandas as pd
-import re
-from datetime import datetime
+import pandas as pd                 #using pandas module to work with dataframes
+import re                           #using regular expressions to create dataframe names from the datafile names
+from datetime import datetime       #using datetime module to convert dates into week numbers
 
 #Reading data from files to generate a pandas data frame
 def dataFrameGen(fileName):
@@ -35,7 +35,7 @@ def dataFrameGen(fileName):
 #reading the files from locations and making a dictionary of data
 def read_data():
     # data file names
-    fileNames = ["stores.csv","features.csv","train.csv"]
+    fileNames = ["stores.csv","features.csv"]#,"train.csv"]
     #creating a dictionary of data example data[stores] has data of the stores as dataframes defined by pandas
     data = {re.sub(r".csv","",file) : dataFrameGen(file) for file in fileNames}
     #displaying the first five lines of data from every file
