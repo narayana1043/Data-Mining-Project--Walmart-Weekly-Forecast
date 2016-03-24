@@ -16,13 +16,14 @@ import re
 import os
 from datetime import datetime
 
-dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv"]
+dataPath = "data/"
+dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv"]
 
 def read_pickled_data() -> dict:
     dataDict = {}
     for fileName in dataFileNames:
         dataName = os.path.splitext(fileName)[0]
-        dataFrame = pd.read_pickle(dataName + "_pickled")
+        dataFrame = pd.read_pickle(dataPath + dataName + "_pickled")
         dataDict[dataName] = dataFrame
 
     return dataDict
@@ -31,13 +32,13 @@ def read_pickled_data() -> dict:
 def pickle_data(dataToPickle: dict):
     for fileName in dataFileNames:
         dataName = os.path.splitext(fileName)[0]
-        dataToPickle[dataName].to_pickle(dataName + "_pickled")
+        dataToPickle[dataName].to_pickle(dataPath + dataName + "_pickled")
 
 
 #Reading data from files to generate a pandas data frame
 def dataFrameGen(fileName):
 
-    dataFrame = pd.read_csv(fileName, header = 0)
+    dataFrame = pd.read_csv(dataPath + fileName, header = 0)
     #checking if a dataframe has a Date column
     if "Date" in dataFrame.columns.values:
         # if ture we are replacing the date column with an week number of the year
