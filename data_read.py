@@ -17,7 +17,7 @@ import os
 from datetime import datetime
 
 dataPath = "data/"
-dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv"]
+dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv"]
 
 def read_pickled_data() -> dict:
     dataDict = {}
