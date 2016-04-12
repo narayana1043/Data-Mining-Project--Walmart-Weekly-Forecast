@@ -18,6 +18,11 @@ from datetime import datetime
 from scipy import average
 import threading
 
+
+NUM_DEPTS = 99
+NUM_STORES = 44
+NUM_WEEKS = 52
+
 dataPath = "data/"
 dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv","test.csv"]
 
@@ -83,6 +88,11 @@ def read_data_from_pickle() -> dict:
 def near_mean_cal(record,trainData):
     record["Weekly_Sales"] = average(trainData.loc[(trainData["Store"]==record["Store"]) & (trainData["Dept"]==record["Dept"]) & (abs(trainData["WeekNum"] - record["WeekNum"]) < 2)]["Weekly_Sales"])
 
+
+def get_adjacent_week_sales_values(deptTrainData, record):
+    return deptTrainData.loc[(abs(deptTrainData["WeekNum"] - record["WeekNum"]) < 2) & (deptTrainData["IsHoliday"] == record["IsHoliday"])]["Weekly_Sales"]
+
+
 def sales_mapping():
     data = read_data_from_pickle()
     testData = data["test"]
@@ -90,8 +100,26 @@ def sales_mapping():
     testData["Weekly_Sales"] = None
 
     # this loop needs to be threaded.
-    for index,record in testData.iterrows():
-        record["Weekly_Sales"] = average(trainData.loc[(trainData["Store"]==record["Store"]) & (trainData["Dept"]==record["Dept"]) & (abs(trainData["WeekNum"] - record["WeekNum"]) < 2)]["Weekly_Sales"])
+    # for index,record in testData.iterrows():
+    #     print(index)
+    #     record["Weekly_Sales"] = average(trainData.loc[(trainData["Store"]==record["Store"]) & (trainData["Dept"]==record["Dept"]) & (abs(trainData["WeekNum"] - record["WeekNum"]) < 2)]["Weekly_Sales"])
+
+    newTrainData = pd.DataFrame(columns=trainData.columns.values)
+    newTrainData["Weekly_Sales_Averaged"] = None
+
+    for storeNum in range(1, NUM_STORES + 1):
+        print("Store: ", storeNum)
+        storeTrainData = trainData[trainData["Store"] == storeNum]
+        for deptNum in range(1, NUM_DEPTS + 1):
+            print("Dept: ", deptNum)
+            deptTrainData = storeTrainData[trainData["Dept"] == deptNum]
+            for index, record in deptTrainData.iterrows():
+                valuesToAverage = deptTrainData.loc[(abs(deptTrainData["WeekNum"] - record["WeekNum"]) < 2) & (deptTrainData["IsHoliday"] == record["IsHoliday"])]["Weekly_Sales"]
+                deptTrainData.set_value(index, "Weekly_Sales_Averaged", average(valuesToAverage))
+
+            newTrainData = newTrainData.append(deptTrainData)
+
+    trainData = newTrainData
 
     print(testData.head())
 
