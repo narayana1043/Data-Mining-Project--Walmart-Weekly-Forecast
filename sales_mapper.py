@@ -16,6 +16,7 @@ import re
 import os
 from datetime import datetime
 from scipy import average
+from oop_objects import Store
 import threading
 
 
@@ -25,7 +26,6 @@ NUM_WEEKS = 52
 
 dataPath = "data/"
 dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv","test.csv"]
-
 
 def read_pickled_data() -> dict:
     dataDict = {}
@@ -123,4 +123,22 @@ def sales_mapping():
 
     print(testData.head())
 
-sales_mapping()
+
+def sales_mapping_rev1():
+    data = read_data_from_pickle()
+    testData = data["test"]
+    trainData = data["train"]
+    testData["Weekly_Sales"] = None
+
+    newTrainData = pd.DataFrame(columns=trainData.columns.values)
+    newTrainData["Weekly_Sales_Averaged"] = None
+    stores = [None] * (NUM_STORES + 1)
+
+    for storeNum in range(1, NUM_STORES + 1):
+        print("Store: ", storeNum)
+        stores[storeNum] = Store(storeNum)
+        storeTrainData = trainData[trainData["Store"] == storeNum]
+        stores[storeNum].set_weekly_sales_averages(storeTrainData)
+
+
+sales_mapping_rev1()
