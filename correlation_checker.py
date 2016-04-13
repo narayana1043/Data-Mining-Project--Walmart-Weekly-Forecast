@@ -11,12 +11,11 @@ Variables = camelCase
 
 '''
 
+
 import pandas as pd
 import re
 import os
 from datetime import datetime
-from sklearn import preprocessing
-min_max_scaler = preprocessing.MinMaxScaler()
 from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 
@@ -62,22 +61,16 @@ def dataFrameGen(fileName):
 def read_data() -> dict:
 
     #creating a dictionary of data example data[stores] has data of the stores as dataframes defined by pandas
-    data = {re.sub(r".csv","",file) : dataFrameGen(file) for file in dataFileNames}
-    #displaying the first five lines of data from every file
-    #this is only to cross check that everything works as per thoughts
-    # for key,value in data.items():
-    #     print(key)
-    #     print(value.head(),"\n")
+    #data = {re.sub(r".csv","",file) : dataFrameGen(file) for file in dataFileNames}
+    data = read_pickled_data()
     train = data['train']
     train['Temperature'] = None
     historical_features = data['historical_features']
-    #print(historical_features.head())
     for index,row in historical_features.iterrows():
         Store = row['Store']
         WeekNum = row['WeekNum']
         Temperature = row['Temperature']
         Fuel_Price = row['Fuel_Price']
-        #train.Temperature[(train['Store'] == Store) & (train['WeekNum'] == WeekNum)] = Temperature
         train['Temperature','Fuel_Price'][(train['Store'] == Store) & (train['WeekNum'] == WeekNum)] = [Temperature,Fuel_Price]
     return data
 
@@ -86,13 +79,10 @@ def read_data() -> dict:
 
 def normalize():
     #reading pickle data
-    data = read_pickled_data()
+    #data = read_pickled_data()
+    data = read_data()
     train = data['train']
     print(train.head())
-    #min max normalization for temperatures
-    #train['Temperature'] = min_max_scaler.fit_transform(train['Temperature'])
-    #min max normalization for sales
-    #train['Weekly_Sales'] = min_max_scaler.fit_transform(train['Weekly_Sales'])
     for storeNum in range(1,46):
         for deptNum in range(1,100):
             pearsonCorr = abs(pearsonr(train.Weekly_Sales[(train['Dept'] == deptNum) & (train['Store'] == storeNum)],(train.Temperature[(train['Dept'] == deptNum) & (train['Store'] == storeNum)]))[0])
