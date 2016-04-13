@@ -1,11 +1,4 @@
-
-
-import pandas as pd
-import re
-import os
-from datetime import datetime
 from scipy import average
-import threading
 
 NUM_DEPTS = 99
 NUM_STORES = 44
@@ -31,6 +24,7 @@ class Store:
 
 
 class Dept:
+
     def __init__(self, deptNum):
         self.deptNum = deptNum
         self.weekSaleAverages = [None] * (NUM_WEEKS + 1)

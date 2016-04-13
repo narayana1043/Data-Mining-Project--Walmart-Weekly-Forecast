@@ -17,7 +17,7 @@ import os
 from datetime import datetime
 from scipy import average
 from oop_objects import Store
-import threading
+from time import time
 
 
 NUM_DEPTS = 99
@@ -65,8 +65,7 @@ def dataFrameGen(fileName):
             except Exception:
                 pass
 
-        #mapping the map to the dataframe for update
-        #updating the column name
+        #mapping the map to the dataframe for update and updating the column name
 
         dataFrame["Date"] = dataFrame["Date"].map(dateToWeekNumMap)
         dataFrame.rename(columns = {"Date":"WeekNum"}, inplace = True)
@@ -110,6 +109,7 @@ def sales_mapping():
     for storeNum in range(1, NUM_STORES + 1):
         print("Store: ", storeNum)
         storeTrainData = trainData[trainData["Store"] == storeNum]
+        start = time()
         for deptNum in range(1, NUM_DEPTS + 1):
             print("Dept: ", deptNum)
             deptTrainData = storeTrainData[trainData["Dept"] == deptNum]
@@ -118,7 +118,8 @@ def sales_mapping():
                 deptTrainData.set_value(index, "Weekly_Sales_Averaged", average(valuesToAverage))
 
             newTrainData = newTrainData.append(deptTrainData)
-
+        print(time()-start)
+        break
     trainData = newTrainData
 
     print(testData.head())
@@ -134,11 +135,13 @@ def sales_mapping_rev1():
     newTrainData["Weekly_Sales_Averaged"] = None
     stores = [None] * (NUM_STORES + 1)
 
+    start = time()
     for storeNum in range(1, NUM_STORES + 1):
         print("Store: ", storeNum)
         stores[storeNum] = Store(storeNum)
         storeTrainData = trainData[trainData["Store"] == storeNum]
         stores[storeNum].set_weekly_sales_averages(storeTrainData)
+        break
+    print(time()-start)
 
-
-sales_mapping_rev1()
+sales_mapping()
