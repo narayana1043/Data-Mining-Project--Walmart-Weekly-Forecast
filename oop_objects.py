@@ -1,38 +1,5 @@
 from scipy import average
-<<<<<<< HEAD
-=======
 from constants import *
-import threading
->>>>>>> 1896615778b244f5fa4d18f46b693a170c55bd5b
-
-
-from enum import Enum
-
-featureStringToNum = {
-    "Temperature": 0,
-    "Fuel_Price": 1,
-    "MarkDown1":  2,
-    "MarkDown2": 3,
-    "MarkDown3": 4,
-    "MarkDown4": 5,
-    "MarkDown5": 6,
-    "CPI": 7,
-    "Unemployment": 8,
-    "IsHoliday": 9
-}
-
-class Feature(Enum):
-    Temperature = 0
-    Fuel_Price = 1
-    MarkDown1 = 2
-    MarkDown2 = 3
-    MarkDown3 = 4
-    MarkDown4 = 5
-    MarkDown5 = 6
-    CPI = 7
-    Unemployment = 8
-    IsHoliday = 9
-
 
 class Store:
 

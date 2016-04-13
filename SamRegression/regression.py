@@ -1,13 +1,8 @@
-
-
-from read_data_functions import *
-from constants import *
-from utilities import *
-from oop_objects import *
-import statsmodels.api as sm
 from pandas.stats.api import ols
-import sklearn.linear_model
+from oop_objects import *
+from read_data_functions import *
 from sales_mapper import *
+from utilities import *
 
 getPickledDataPath = "data/"
 regressionPickledDataPath = "SamRegression/pickled_data/"
