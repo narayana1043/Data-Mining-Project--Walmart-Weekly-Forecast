@@ -17,12 +17,14 @@ import os
 from datetime import datetime
 from scipy import average
 from oop_objects import Store
+<<<<<<< HEAD
 from time import time
+=======
+from constants import *
+import threading
+>>>>>>> 1896615778b244f5fa4d18f46b693a170c55bd5b
 
 
-NUM_DEPTS = 99
-NUM_STORES = 44
-NUM_WEEKS = 52
 
 dataPath = "data/"
 dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv","test.csv"]
@@ -125,7 +127,7 @@ def sales_mapping():
     print(testData.head())
 
 
-def sales_mapping_rev1():
+def sales_mapping_rev1() -> list:
     data = read_data_from_pickle()
     testData = data["test"]
     trainData = data["train"]
@@ -144,4 +146,10 @@ def sales_mapping_rev1():
         break
     print(time()-start)
 
+<<<<<<< HEAD
 sales_mapping()
+=======
+    return stores
+
+sales_mapping_rev1()
+>>>>>>> 1896615778b244f5fa4d18f46b693a170c55bd5b
