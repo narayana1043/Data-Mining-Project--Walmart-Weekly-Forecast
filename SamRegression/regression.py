@@ -105,8 +105,8 @@ def calculate_and_print_correlations(trainData: pd.DataFrame):
 
 
 
-data = read_pickled_data_from_path(["train", "stores", "historical_features"], regressionPickledDataPath)
-trainData = data["train"]
+data = read_pickled_data_from_path(["train_features.csv", "stores", "historical_features"], regressionPickledDataPath)
+trainData = data["train_features.csv"]
 
 featuresData = data["historical_features"]
 stores = [None] * (NUM_STORES + 1)
@@ -116,8 +116,8 @@ stores = fill_objects_with_historical_features(stores, featuresData)
 trainData = add_features_to_train_data(stores, trainData)
 trainData = normalize_department_sales(trainData)
 #
-# data["train"] = trainData
+# data["train_features.csv"] = trainData
 # pickle_data(writePickledDataPath, data)
 
-# data = read_pickled_data_from_path(["train", "stores", "historical_features"], writePickledDataPath)
-# calculate_and_print_correlations(data['train'])
+# data = read_pickled_data_from_path(["train_features.csv", "stores", "historical_features"], writePickledDataPath)
+# calculate_and_print_correlations(data['train_features.csv'])

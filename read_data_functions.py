@@ -7,38 +7,34 @@ from sklearn import preprocessing
 min_max_scaler = preprocessing.MinMaxScaler()
 
 
-def read_pickled_data(dataPath, dataFileNames) -> dict:
+# def read_pickled_data(dataFileNames) -> dict:
+#     dataDict = {}
+#     for fileName in dataFileNames:
+#         dataFrame = pd.read_pickle("pickles/" + fileName + "_pickled")
+#         dataDict[fileName] = dataFrame
+#
+#     return dataDict
+
+def read_pickled_data(dataFileNames) -> dict:
     dataDict = {}
     for fileName in dataFileNames:
-        dataName = os.path.splitext(fileName)[0]
-        dataFrame = pd.read_pickle(dataPath + dataName + "_pickled")
-        dataDict[dataName] = dataFrame
-
+        dataDict[fileName] = get_pickled_data_frame(fileName)
     return dataDict
 
-def read_pickled_data_from_path(pickledFileBaseNames, path) -> dict:
-    dataDict = {}
-    for baseName in pickledFileBaseNames:
-        dataDict[baseName] = get_pickled_data_frame(path + baseName + "_pickled")
+def get_pickled_data_frame(dataName):
+    return pd.read_pickle("pickles/"+dataName+"_pickled")
 
-    return dataDict
+def pickle_data_frame(dataName, dataToPickle):
+    dataToPickle.to_pickle("pickles/" + dataName + "_pickled")
 
-def get_pickled_data_frame(dataFrame):
-    return pd.read_pickle("raw_frame_pickles/"+dataFrame+"_pickled")
-
-def pickle_data(dataPath, dataFileNames, dataToPickle: dict):
-    for fileName in dataFileNames:
-        dataName = os.path.splitext(fileName)[0]
-        dataToPickle[dataName].to_pickle(dataPath + dataName + "_pickled")
-
-def pickle_data(pickleDataPath, dataToPickle: dict):
+def pickle_data(dataToPickle: dict):
     for dataFrameName in dataToPickle.keys():
-        print(dataToPickle[dataFrameName].head())
-        dataToPickle[dataFrameName].to_pickle(pickleDataPath + dataFrameName + "_pickled")
+        pickle_data_frame(dataFrameName,dataToPickle[dataFrameName])
+        # dataToPickle[dataFrameName].to_pickle(pickleDataPath + dataFrameName + "_pickled")
 
 #Reading data from files to generate a pandas data frame
 def dataFrameGen(fileName,dataPath):
-    dataFrame = pd.read_csv(dataPath + fileName, header = 0)
+    dataFrame = pd.read_csv(dataPath + fileName, header = 0, low_memory=False)
     if "Date" in dataFrame.columns.values:
         for row in dataFrame.iterrows():
             x = time.strptime(row[1]["Date"],"%m/%d/%Y")
@@ -48,10 +44,9 @@ def dataFrameGen(fileName,dataPath):
     return dataFrame
 
 #reading the files from locations and making a dictionary of data
-def read_data() -> dict:
+def read_data(dataFileNames) -> dict:
     dataPath = "data/"
-    dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv"]
-    data = {re.sub(r".csv","",file) : dataFrameGen(file,dataPath) for file in dataFileNames}
-    return data
+    data = {file : dataFrameGen(file+".csv",dataPath) for file in dataFileNames}
+    pickle_data(data)
 
-pickle_data("data/raw_frame_pickles/", read_data())
+read_data(["historical_features","test","train"])

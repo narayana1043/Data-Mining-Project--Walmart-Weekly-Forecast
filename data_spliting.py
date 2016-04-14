@@ -4,46 +4,16 @@ Spliting the data into holiday and non hoilday so that we can deal with independ
 
 """
 
-import os
-import pandas as pd
-
-
-dataPath = "data/"
-dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv","test.csv"]
-
-def read_pickled_data() -> dict:
-
-    dataDict = {}
-    for fileName in dataFileNames:
-        dataName = os.path.splitext(fileName)[0]
-        dataFrame = pd.read_pickle(dataPath + dataName + "_pickled")
-        dataDict[dataName] = dataFrame
-
-    return dataDict
-
-
-def pickle_data(dataToPickle: dict):
-
-    for fileName in dataFileNames:
-        dataName = os.path.splitext(fileName)[0]
-        dataToPickle[dataName].to_pickle(dataPath + dataName + "_pickled")
-
-
-#unpickling
-def read_data_from_pickle() -> dict:
-
-    data = read_pickled_data()
-    #print(data.keys())
-    return data
+from read_data_functions import *
 
 def data_splitter():
-
-    data = read_data_from_pickle()
-    for file in ["test","train"]:
-        file2Split = data[file]
+    dataFrameNames = ["test","train_features_mixture"]
+    data = read_pickled_data(dataFrameNames)
+    for fileName in dataFrameNames:
+        file2Split = data[fileName]
         holidayFile = file2Split[file2Split["IsHoliday"] == True]
         nonHolidayFile = file2Split[file2Split["IsHoliday"] == False]
-        holidayFile.to_csv("data/holiday_data/"+file,index=False)
-        nonHolidayFile.to_csv("data/non_holiday_data/"+file,index=False)
+        holidayFile.to_csv("data/holiday_data/"+fileName,index=False)
+        nonHolidayFile.to_csv("data/non_holiday_data/"+fileName,index=False)
 
 data_splitter()

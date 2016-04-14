@@ -20,7 +20,6 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from read_data_functions import *
 
-<<<<<<< HEAD
 dataPath = "data/"
 dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv"]
 
@@ -75,8 +74,6 @@ def read_data() -> dict:
         Fuel_Price = row['Fuel_Price']
         train['Temperature','Fuel_Price'][(train['Store'] == Store) & (train['WeekNum'] == WeekNum)] = [Temperature,Fuel_Price]
     return data
-=======
->>>>>>> 1896615778b244f5fa4d18f46b693a170c55bd5b
 
 #Example usage for pickling/unpickling
 #pickle_data(read_data())
@@ -87,13 +84,12 @@ def normalize():
     data = read_data()
     train = data['train']
     print(train.head())
-<<<<<<< HEAD
-=======
+
     #min max normalization for temperatures
     train['Temperature'] = min_max_scaler.fit_transform(train['Temperature'])
     #min max normalization for sales
     train['Weekly_Sales'] = min_max_scaler.fit_transform(train['Weekly_Sales'])
->>>>>>> 1896615778b244f5fa4d18f46b693a170c55bd5b
+
     for storeNum in range(1,46):
         for deptNum in range(1,100):
             pearsonCorr = abs(pearsonr(train.Weekly_Sales[(train['Dept'] == deptNum) & (train['Store'] == storeNum)],(train.Temperature[(train['Dept'] == deptNum) & (train['Store'] == storeNum)]))[0])
