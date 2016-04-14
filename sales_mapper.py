@@ -11,40 +11,32 @@ Variables = camelCase
 
 '''
 
-import pandas as pd
-import re
-import os
-from datetime import datetime
 from scipy import average
-from oop_objects import Store
+
 from constants import *
-import threading
-
-
-
-dataPath = "data/"
-dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv","test.csv"]
+from read_data_functions import *
+from sams_work.oop_objects import Store
 
 def read_pickled_data() -> dict:
     dataDict = {}
-    for fileName in dataFileNames:
+    for fileName in DATA_FILE_NAMES:
         dataName = os.path.splitext(fileName)[0]
-        dataFrame = pd.read_pickle(dataPath + dataName + "_pickled")
+        dataFrame = pd.read_pickle(DATA_PATH + dataName + "_pickled")
         dataDict[dataName] = dataFrame
 
     return dataDict
 
 
 def pickle_data(dataToPickle: dict):
-    for fileName in dataFileNames:
+    for fileName in DATA_FILE_NAMES:
         dataName = os.path.splitext(fileName)[0]
-        dataToPickle[dataName].to_pickle(dataPath + dataName + "_pickled")
+        dataToPickle[dataName].to_pickle(DATA_PATH + dataName + "_pickled")
 
 
 #Reading data from files to generate a pandas data frame
 def dataFrameGen(fileName):
 
-    dataFrame = pd.read_csv(dataPath + fileName, header = 0)
+    dataFrame = pd.read_csv(DATA_PATH + fileName, header = 0)
 
     #checking if a dataframe has a Date column
 
@@ -70,9 +62,7 @@ def dataFrameGen(fileName):
         dataFrame.rename(columns = {"Date":"WeekNum"}, inplace = True)
     return dataFrame
 
-def read_data_from_file():
-    data = {re.sub(r".csv","",file) : dataFrameGen(file) for file in dataFileNames}
-    return data
+
 
 #Example usage for pickling
 #pickle_data(read_data_from_file())
@@ -120,24 +110,3 @@ def sales_mapping():
     trainData = newTrainData
 
     print(testData.head())
-
-
-def sales_mapping_rev1() -> list:
-    data = read_data_from_pickle()
-    testData = data["test"]
-    trainData = data["train"]
-    testData["Weekly_Sales"] = None
-
-    newTrainData = pd.DataFrame(columns=trainData.columns.values)
-    newTrainData["Weekly_Sales_Averaged"] = None
-    stores = [None] * (NUM_STORES + 1)
-
-    for storeNum in range(1, NUM_STORES + 1):
-        print("Store: ", storeNum)
-        stores[storeNum] = Store(storeNum)
-        storeTrainData = trainData[trainData["Store"] == storeNum]
-        stores[storeNum].set_weekly_sales_averages(storeTrainData)
-
-    return stores
-
-sales_mapping_rev1()

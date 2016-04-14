@@ -36,7 +36,7 @@ def pickle_data(dataToPickle: dict):
         dataName = os.path.splitext(fileName)[0]
         dataToPickle[dataName].to_pickle(dataPath + dataName + "_pickled")
 
-def pickle_data(pickleDataPath, dataToPickle: dict):
+def pickle_data_to_path(pickleDataPath, dataToPickle: dict):
 
     for dataFrameName in dataToPickle.keys():
         dataToPickle[dataFrameName].to_pickle(pickleDataPath + dataFrameName + "_pickled")
