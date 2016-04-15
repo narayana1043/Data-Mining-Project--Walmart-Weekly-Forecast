@@ -29,7 +29,7 @@ def add_features_to_train_data(stores: list, trainData) -> pd.DataFrame:
     return newTrainData
 
 
-def normalize_department_sales(trainData: pd.DataFrame) -> pd.DataFrame:
+def normalize_department_sales(trainData: pd.DataFrame, stores: list) -> pd.DataFrame:
     newTrainData = pd.DataFrame(columns=trainData.columns.values)
     newTrainData["Normalized_Weekly_Sales"] = None
 
@@ -37,14 +37,25 @@ def normalize_department_sales(trainData: pd.DataFrame) -> pd.DataFrame:
         print("Store ", storeNum)
         storeDataFrame = get_store_rows(trainData, storeNum)
         for deptNum in DEPTS_RANGE:
-            print("Dept ", deptNum)
+            # print("Dept ", deptNum)
             deptDataFrame = get_dept_rows(storeDataFrame, deptNum)
-            if len(deptDataFrame) == 0:
+            dataFrameLength = len(deptDataFrame)
+            if dataFrameLength == 0:
                 continue
             # deptDataFrame['Normalized_Weekly_Sales'] = min_max_scaler.fit_transform(deptDataFrame['Weekly_Sales'].reshape(-1,1))
-            deptDataFrame['Normalized_Weekly_Sales'] = (deptDataFrame['Weekly_Sales'] - average(deptDataFrame['Weekly_Sales']))/deptDataFrame['Weekly_Sales'].std()
+            deptAverage = average(deptDataFrame['Weekly_Sales'])
 
+            if dataFrameLength == 1:
+                deptStd = 0
+                deptDataFrame['Normalized_Weekly_Sales'] = 0
+            else:
+                deptStd = deptDataFrame['Weekly_Sales'].std()
+                deptDataFrame['Normalized_Weekly_Sales'] = (deptDataFrame['Weekly_Sales'] - deptAverage) / deptStd
+
+            stores[storeNum].departments[deptNum].set_dept_avg_and_std(deptAverage, deptStd)
             newTrainData = newTrainData.append(deptDataFrame)
+
+    # pickle_store_objects(stores)
 
     return newTrainData
 

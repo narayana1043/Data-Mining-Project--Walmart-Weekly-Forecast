@@ -8,7 +8,8 @@ from scipy import average
 from constants import *
 import threading
 import math
-
+import pickle
+from sams_work.predictions_set_object import *
 
 from enum import Enum
 
@@ -38,9 +39,11 @@ class Feature(Enum):
     IsHoliday = 9
 
 
+
 class Store:
 
     def __init__(self, storeNum):
+        self.storeParams = None
         self.departments = [None] * (NUM_DEPTS + 1)
         self.weekFeatureSets = [None] * (NUM_WEEKS_HISTORICAL + 1)
         self.storeNum = storeNum
@@ -60,6 +63,28 @@ class Store:
         for index, record in storeDataFrame.iterrows():
             self.weekFeatureSets[record["AbsoluteWeekNum"]] = record.as_matrix()[3:]
 
+    def get_average_for_future_week(self, futureWeek: FutureWeek) -> float:
+        return self.departments[futureWeek.deptNum].get_average_for_future_week(futureWeek)
+
+    def get_average_of_all_depts_for_future_week(self, futureWeek: FutureWeek) -> float:
+        deptAverages = []
+
+        for deptNum in DEPTS_RANGE:
+            dept = self.departments[deptNum]
+
+            try:
+                deptAverages.append(dept.get_average_for_future_week(futureWeek))
+            except UnableToCalculateAverageError:
+                pass
+
+        averageOverAllDepts = average(deptAverages)
+
+        if math.isnan(averageOverAllDepts):
+            raise UnableToCalculateAverageError("No values for Dept-WeekNum doubles of this store")
+        else:
+            return averageOverAllDepts
+
+
 
 class WeekFeatureSet:
 
@@ -72,6 +97,8 @@ class Dept:
         self.deptNum = deptNum
         self.weekSaleAverages = [None] * (NUM_WEEKS + 1)
         self.initialize_week_sale_averages()
+        self.deptSalesAverage = 0
+        self.deptSalesStd = 0
 
     def initialize_week_sale_averages(self):
         for weekNum in range(1, NUM_WEEKS + 1):
@@ -82,29 +109,35 @@ class Dept:
             weekDataFrame = deptDataFrame[abs(deptDataFrame["WeekNum"] - weekNum) < 3]
             self.weekSaleAverages[weekNum].set_sale_averages(weekDataFrame)
 
+    def set_dept_avg_and_std(self, deptAvg: float, deptStd: float):
+        self.deptSalesAverage = deptAvg
+        self.deptSalesStd = deptStd
+
+    def get_average_for_future_week(self, futureWeek: FutureWeek) -> float:
+        return self.weekSaleAverages[futureWeek.weekNum].get_average_for_future_week(futureWeek)
+
+weightings = {-2: 10, -1: 20, 0: 40, 1: 20, 2: 10}
 
 
 class WeekSaleAverage:
     numDoublesWithLowSampleSize = 0
-    weightings = {-2: 10, -1: 20, 0: 40, 1: 20, 2: 10}
-
 
     def __init__(self, weekNum):
-        self.holidaySalesAverage = None
-        self.nonHolidaySalesAverage = None
+        self.holidayNormalizedSalesAverage = None
+        self.nonHolidayNormalizedSalesAverage = None
         self.numHolidayValues = 0
         self.numNonHolidayValues = 0
         self.weekNum = weekNum
 
-    def get_weighted_sales_value(self, dataFrame):
+    def get_weighted__normalized_sales_value(self, dataFrame):
         weightedSalesProduct = 0
         totalWeighting = 0
 
-        for relativeIndex in self.weightings.keys():
-            averageSales = average(dataFrame[dataFrame["WeekNum"] == (self.weekNum + relativeIndex)]["Weekly_Sales"])
-            if not math.isnan(averageSales):
-                weightedSalesProduct += averageSales * self.weightings[relativeIndex]
-                totalWeighting += self.weightings[relativeIndex]
+        for relativeIndex in weightings.keys():
+            averageNormalizedSales = average(dataFrame[dataFrame["WeekNum"] == (self.weekNum + relativeIndex)]["Normalized_Weekly_Sales"])
+            if not math.isnan(averageNormalizedSales):
+                weightedSalesProduct += averageNormalizedSales * weightings[relativeIndex]
+                totalWeighting += weightings[relativeIndex]
         try:
             return weightedSalesProduct / totalWeighting
         except ZeroDivisionError:
@@ -114,19 +147,38 @@ class WeekSaleAverage:
         holidaySalesData = weekDataFrame[weekDataFrame["IsHoliday"] == True]
         nonHolidaySalesData = weekDataFrame[weekDataFrame["IsHoliday"] == False]
 
-        self.holidaySalesAverage = self.get_weighted_sales_value(holidaySalesData)
-        self.nonHolidaySalesAverage = self.get_weighted_sales_value(nonHolidaySalesData)
+        self.holidayNormalizedSalesAverage = self.get_weighted__normalized_sales_value(holidaySalesData)
+        self.nonHolidayNormalizedSalesAverage = self.get_weighted__normalized_sales_value(nonHolidaySalesData)
 
         self.numHolidayValues = len(holidaySalesData)
         self.numNonHolidayValues = len(nonHolidaySalesData)
 
+    def get_sales_value_or_raise_error(self, value):
+        if math.isnan(value):
+            raise UnableToCalculateAverageError("No Average Available for Given Holiday status")
+        else:
+            return value
 
-class FutureWeek:
+    def get_average_for_future_week(self, futureWeek: FutureWeek) -> float:
+        if futureWeek.isHoliday:
+            return self.get_sales_value_or_raise_error(self.holidayNormalizedSalesAverage)
+        else:
+            return self.get_sales_value_or_raise_error(self.nonHolidayNormalizedSalesAverage)
 
-    def __init__(self, testRow):
-        self.date = testRow['DateReal']
-        self.storeNum = testRow['Store']
-        self.deptNum = testRow['Dept']
-        self.weekNum = testRow['WeekNum']
-        self.isHoliday = testRow['IsHoliday']
-        self.predictedSales = None
+#
+# class StoreSet:
+#     def __init__(self):
+#         self.stores = [None] * (NUM_STORES + 1)
+#
+#     def pickle(self):
+#         with open((SAMS_PICKLED_DATA_PATH + "store_set_pickled"), 'wb') as f:
+#             pickle.dump(self, f)
+#
+#     def set_store(self, storeNum: int, store: Store):
+#         self.stores[storeNum] = store
+
+class StoreParams:
+
+    def __init__(self, type: str, size: int):
+        self.type = type
+        self.size = size
