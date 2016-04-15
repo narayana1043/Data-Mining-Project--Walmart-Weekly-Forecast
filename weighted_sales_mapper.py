@@ -57,8 +57,8 @@ def sales_mapping() -> list:
             for weekNum in holidayWeeks:
                 outputFrame=week_mapping(deptStoreTestData,deptStoreTrainData,weekNum,True,outputFrame)
 
-    outputFrame.to_csv("data/output/weightedWindowLT"+weekWindow+".csv",index=False)
-    pickle_data_frame("weightedWindowLT"+weekWindow,outputFrame)
+    outputFrame.to_csv("data/output/weightedWindowLT"+str(weekWindow)+".csv",index=False)
+    pickle_data_frame("weightedWindowLT"+str(weekWindow),outputFrame)
     print(time.time() - start)
 
 # weekWindow = int(input("Please Enter the week window length"))
