@@ -35,12 +35,13 @@ def pickle_data(dataToPickle: dict):
 #Reading data from files to generate a pandas data frame
 def dataFrameGen(fileName,dataPath):
     dataFrame = pd.read_csv(dataPath + fileName, header = 0, low_memory=False)
+    dataFrame["WeekNum"] = None
     if "Date" in dataFrame.columns.values:
         for row in dataFrame.iterrows():
             x = time.strptime(row[1]["Date"],"%m/%d/%Y")
             value = datetime(x.tm_year,x.tm_mon,x.tm_mday).isocalendar()[1]
-            dataFrame.set_value(row[0],"Date", value)
-        dataFrame.rename(columns = {"Date":"WeekNum"}, inplace = True)
+            dataFrame.set_value(row[0],"WeekNum", value)
+        #dataFrame.rename(columns = {"Date":"WeekNum"}, inplace = True)
     return dataFrame
 
 #reading the files from locations and making a dictionary of data
