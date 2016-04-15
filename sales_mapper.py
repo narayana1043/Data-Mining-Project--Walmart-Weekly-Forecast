@@ -2,19 +2,18 @@ from scipy import average
 from read_data_functions import *
 pd.options.mode.chained_assignment = None  # default='warn'
 
-outputFrame = pd.DataFrame()
-weekWindow = int(input("Please Enter the week window length"))
 
-
-def week_mapping_navieBayes(deptStoreTestData,deptStoreTrainData,weekNum,weekType):
+def week_mapping_naiveBayes(deptStoreTestData,deptStoreTrainData,weekNum,weekType,outputFrame):
     weekDeptStoreTestData = deptStoreTestData[deptStoreTestData["WeekNum"] == weekNum]
     salesWeeklyDeptStoreTrainData = deptStoreTrainData[(abs(deptStoreTrainData["WeekNum"] - weekNum) < weekWindow) & (deptStoreTrainData["IsHoliday"] == weekType)].Weekly_Sales
     weekDeptStoreTestData["Weekly_Sales"] = average(salesWeeklyDeptStoreTrainData)
-    outputFrame.append(weekDeptStoreTestData)
+    outputFrame = outputFrame.append(weekDeptStoreTestData)
+    return outputFrame
 
-def sales_mapping_navieBayes() -> list:
+def sales_mapping_naiveBayes() -> list:
     testData = get_pickled_data_frame("test")
     trainData = get_pickled_data_frame("train")
+    outputFrame = pd.DataFrame()
     testData["Weekly_Sales"] = None
     stores = list(set(testData.Store))
     start = time.time()
@@ -29,17 +28,19 @@ def sales_mapping_navieBayes() -> list:
             nonHolidayWeeks = list(set(deptStoreTestData[deptStoreTestData["IsHoliday"] == False].WeekNum))
             holidayWeeks = list(set(deptStoreTestData[deptStoreTestData["IsHoliday"] == True].WeekNum))
             for weekNum in nonHolidayWeeks:
-                week_mapping_navieBayes(deptStoreTestData,deptStoreTrainData,weekNum,False)
-                break
+                outputFrame = week_mapping_naiveBayes(deptStoreTestData,deptStoreTrainData,weekNum,False,outputFrame)
+
             for weekNum in holidayWeeks:
-                week_mapping_navieBayes(deptStoreTestData,deptStoreTrainData,weekNum,True)
-                break
-            break
-        break
-    outputFrame.to_csv("data/output/NavieBaseWindowLT3.csv",index=False)
-    pickle_data_frame("OutputFrame",outputFrame)
+                outputFrame = week_mapping_naiveBayes(deptStoreTestData,deptStoreTrainData,weekNum,True,outputFrame)
+
+    outputFrame.to_csv("data/output/NaiveBayesWindowLT"+weekWindow+".csv",index=False)
+    pickle_data_frame("NaiveBayesWindowLT"+weekWindow,outputFrame)
     print(time.time() - start)
 
 
-sales_mapping_navieBayes()
+# sales_mapping_naiveBayes()
+# weekWindow = int(input("Please Enter the week window length"))
 
+for i in range(3,5):
+    weekWindow =i
+    sales_mapping_naiveBayes()
