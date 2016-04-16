@@ -57,17 +57,31 @@ def recreate_stores():
     featuresData = data["historical_features"]
     storesData = data["stores"]
 
-    trainData = dataFrameGen("train.csv")
+    trainData = read_pickled_file("train_with_features_pickled")
+    # trainData = dataFrameGen("train.csv")
 
     stores = initiliaze_list_of_stores()
     trainData = normalize_department_sales(trainData, stores)
 
     stores = read_store_objects_pickle()
+
     stores = sales_mapping_to_store_objects(trainData, stores)
+
+    pickle_items(stores, "store_objects_step2_pickled")
+
     stores = fill_objects_with_historical_features(featuresData, stores)
+
+    pickle_items(stores, "store_objects_step3_pickled")
+
     stores = set_store_params(storesData, stores)
 
-    pickle_store_objects(stores)
+    pickle_items(stores, "store_objects_step4_pickled")
+
+    stores = fill_stores_with_regression_data(trainData, stores)
+
+    pickle_items(stores, "store_objects_step5_pickled")
+
+    # pickle_store_objects(stores)
     data['train'] = trainData
 
     pickle_data_to_path(SAMS_PICKLED_DATA_PATH, data)
@@ -81,19 +95,39 @@ def add_features_and_normalize_train_data(trainData: pd.DataFrame) -> pd.DataFra
     return trainData
 
 
-data = read_pickled_data_from_path(["test", "stores", "train"], SAMS_PICKLED_DATA_PATH)
+data = read_pickled_data_from_path(["test", "stores", "train", "future_features"], SAMS_PICKLED_DATA_PATH)
 testData = data["test"]
 trainData = data["train"]
 storesData = data["stores"]
+futureFeaturesData = data["future_features"]
 
 # recreate_stores()
 # predictionsSet = PredictionsSet(testData)
 # pickle_items(predictionsSet, "predictions_set_pickled")
 
 
-stores = read_store_objects_pickle()
+# testData = dataFrameGen("test.csv")
+# pickle_items(testData, "test_pickled")
+# futureStoreSet = FutureStoreSet(testData)
 
-predictionsSet = read_pickled_file("predictions_set_pickled")
-predictionsSet.make_predictions(stores)
-predictionsSet.write_missing_predictions_to_files()
-predictionsSet.write_predictions_to_kaggle_file()
+
+# futureStoreSet = FutureStoreSet(testData)
+# pickle_items(futureStoreSet, "future_store_set_1_pickled")
+#
+# historicalStores = read_pickled_file("store_objects_pickled")
+# futureStoreSet.fill_stores_with_features_data(futureFeaturesData)
+# pickle_items(futureStoreSet, "future_store_set_2_pickled")
+
+
+
+historicalStores = read_pickled_file("store_objects_pickled")
+futureStoreSet = read_pickled_file("future_store_set_2_pickled")
+futureStoreSet.make_predictions_with_weighted_average_of_methods(historicalStores)
+pickle_items(futureStoreSet, "future_store_set_3_pickled")
+futureStoreSet.write_missing_predictions_to_files()
+
+
+futureStoreSet = read_pickled_file("future_store_set_3_pickled")
+futureStoreSet.write_predictions_to_kaggle_file()
+
+

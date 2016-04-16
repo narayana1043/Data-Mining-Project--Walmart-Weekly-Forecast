@@ -25,7 +25,7 @@ def convert_week_num_to_int(dataFrameDict: dict) -> dict:
     return dataFrameDict
 
 
-def read_data_from_file():
+def read_data_from_csv_file():
     data = {re.sub(r".csv","",file) : dataFrameGen(file) for file in DATA_FILE_NAMES}
     return data
 
