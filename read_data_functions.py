@@ -1,19 +1,12 @@
-import os
-import re
 import pandas as pd
 import time
 from datetime import datetime
-from sklearn import preprocessing
-min_max_scaler = preprocessing.MinMaxScaler()
 
-
-# def read_pickled_data(dataFileNames) -> dict:
-#     dataDict = {}
-#     for fileName in dataFileNames:
-#         dataFrame = pd.read_pickle("pickles/" + fileName + "_pickled")
-#         dataDict[fileName] = dataFrame
-#
-#     return dataDict
+"""
+This file contains all the functions that let us read data from various files as per requirements.
+In most cases files are picked and saved for faster access and code is written to access the pickles to perform read operations instead of the file.
+The dataFrameGen in this file also is used to produce the pandas dataframes required for a given input file,further the dataframes are also stored as pickles.
+"""
 
 def read_pickled_data(dataFileNames) -> dict:
     dataDict = {}
@@ -50,4 +43,5 @@ def read_data(dataFileNames) -> dict:
     data = {file : dataFrameGen(file+".csv",dataPath) for file in dataFileNames}
     pickle_data(data)
 
-read_data(["historical_features","test","train"])
+#read_data(["historical_features","test","train"])
+#read_data(["stores"])

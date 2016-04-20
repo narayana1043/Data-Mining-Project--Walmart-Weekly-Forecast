@@ -1,24 +1,14 @@
-# If you are new to python I just want to show you how we read data in python using pandas.
-# I feel it always easy to work with data frames when we have ordered data like in our case.
+#use anaconda interpreter
 
-''' Naming Conventions
-
-Function names should be lowercase, with words separated by underscores as necessary to improve readability.
-
-mixedCase is allowed only in contexts where that's already the prevailing style
-
-Variables = camelCase
-
-'''
-
-
-import pandas as pd
-import re
 import os
-from datetime import datetime
-from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from read_data_functions import *
+from sklearn import preprocessing
+min_max_scaler = preprocessing.MinMaxScaler()
+
+"""
+We used this code to check the correlation between sales and various other features provided in the data from kaggle.
+"""
 
 dataPath = "data/"
 dataFileNames = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv"]

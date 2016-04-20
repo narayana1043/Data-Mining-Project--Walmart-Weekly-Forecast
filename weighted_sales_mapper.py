@@ -2,6 +2,13 @@ from scipy import average, sum
 from read_data_functions import *
 pd.options.mode.chained_assignment = None  # default='warn'
 
+"""
+This file contains the code the generates the outputs for various stores based on the weighted average.
+The weight keeps decreasing as we move away from the current week towards the either end of the window.
+The weight decrease at constant rate and is hardcoded.
+Note: The weight is hardcoded and need to changed as per the requirement
+"""
+
 
 def weightedAverage(salesWeeklyDeptStoreTrainData,weekNum):
         histWeekDiffSales = []
@@ -64,6 +71,6 @@ def sales_mapping() -> list:
 # weekWindow = int(input("Please Enter the week window length"))
 # sales_mapping()
 
-for i in range(3,5):
+for i in range(6,8):
     weekWindow =i
     sales_mapping()

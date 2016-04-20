@@ -2,6 +2,9 @@ from scipy import average
 from read_data_functions import *
 pd.options.mode.chained_assignment = None  # default='warn'
 
+"""
+This code does historical sales to the future sales by averaging(Navie Model)
+"""
 
 def week_mapping_naiveBayes(deptStoreTestData,deptStoreTrainData,weekNum,weekType,outputFrame):
     weekDeptStoreTestData = deptStoreTestData[deptStoreTestData["WeekNum"] == weekNum]
@@ -41,6 +44,6 @@ def sales_mapping_naiveBayes() -> list:
 # sales_mapping_naiveBayes()
 # weekWindow = int(input("Please Enter the week window length"))
 
-for i in range(3,5):
+for i in range(6,8):
     weekWindow =i
     sales_mapping_naiveBayes()

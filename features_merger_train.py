@@ -1,5 +1,9 @@
 from read_data_functions import *
 
+"""
+this code merges the features given in the historical features file to the train data and produces an output file and also a pickle
+"""
+
 def merger():
     dataFileNames = ["historical_features", "train"]
     data = read_pickled_data(dataFileNames)
