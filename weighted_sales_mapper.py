@@ -71,6 +71,6 @@ def sales_mapping() -> list:
 # weekWindow = int(input("Please Enter the week window length"))
 # sales_mapping()
 
-for i in range(6,8):
+for i in range(15,16):
     weekWindow =i
     sales_mapping()

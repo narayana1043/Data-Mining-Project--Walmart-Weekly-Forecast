@@ -44,6 +44,6 @@ def sales_mapping_naiveBayes() -> list:
 # sales_mapping_naiveBayes()
 # weekWindow = int(input("Please Enter the week window length"))
 
-for i in range(6,8):
+for i in range(10,11):
     weekWindow =i
     sales_mapping_naiveBayes()
