@@ -3,18 +3,19 @@
 General Approach:
 
 We used the "pickle" utility of Python to "save" our progress throughout the analysis. This allowed us to perform time-intensive
-analyses, save the results to a pickle file (serialization method), and then reload those pickled results to proceed
-with further steps in the analysis process. We used Pandas dataframes and OOP techniques to manipulate, perform calculations, and organize the data and intermediate
-results.
+analyses, save the results to a pickle file (serialization method), and then quickly reload those pickled results to proceed
+with further steps in the analysis process. We used Pandas dataframes and OOP techniques to manipulate, perform calculations,
+and organize the data and intermediate results.
 
 -------------------
 
 Some Details of Objects and Methods:
 
-The "Store" object within the sams_work/oop_objects.py file is used for storing the data of the historical data. A list of 45
-of these objects is used to hold the historical store data for all of the stores. Throughout the code, this list is often
+The "Store" object within the sams_work/oop_objects.py file is used for storing the data of the historical data. A list of 45 instances
+of this object is used to hold the historical store data for all of the stores. Throughout the code, this list is often
 referred to as "historicalStores" or just "stores." The "FutureStoreSet" object is used to hold all of the data
-for the future store data (i.e. the weeks for which we need to make predictions)
+for the future store data (i.e. the weeks for which we need to make predictions). This object contains a list of "FutureStore"
+objects similar to the historicalStores list, but with some different members and functions.
 
 For my particular program, the predictions are performed within the sams_work/time_series_analysis.py file. At the
 bottom of this file, you can see segments of code, along with comments that explain the purpose of the code and which
@@ -34,11 +35,9 @@ As I mentioned in the report, I don't think you'll be able to run the code, sinc
 on my machine that handled all of the package/module dependencies. I wasn't sure how to export the code with all of
 its dependencies in a manner such that you would be able to run the program. If you are able to somehow run the program,
 you should run the "sams_work/time_series_analysis.py" file as your main, and  make modifications to the code at the bottom
-of the file, depending on what you want to run.
+of the file, depending on what you want to run. As I mentioned, I would be availale for demo if desired.
 
 -------------------
-
-Running the Code:
 
 Output:
 
