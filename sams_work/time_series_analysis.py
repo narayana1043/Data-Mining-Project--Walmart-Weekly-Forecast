@@ -1,9 +1,6 @@
-import pickle
-
-import numpy
-
-from sales_mapper import *
 from sams_work.oop_objects import *
+from sams_work.predictions_set_object import *
+from sales_mapper import *
 from sams_work.regression import *
 from utilities import *
 
@@ -52,38 +49,36 @@ def initiliaze_list_of_stores() -> list:
 def read_store_objects_pickle() -> list:
     return read_pickled_file("store_objects_pickled")
 
+def add_year_to_train():
+    trainData = read_pickled_file("train_with_features_pickled")
+
+    trainData['Year'] = None
+
+    for index,record in trainData.iterrows():
+        trainData.set_value(index, 'Year', 2009 + math.ceil(record['AbsoluteWeekNum']/52))
+
+    pickle_items(trainData, "train_with_features_pickled_rev1")
+
 def recreate_stores():
     data = read_pickled_data_from_path(["historical_features", "stores", "train"], SAMS_PICKLED_DATA_PATH)
     featuresData = data["historical_features"]
     storesData = data["stores"]
 
-    trainData = read_pickled_file("train_with_features_pickled")
+    trainData = read_pickled_file("train_with_features_pickled_rev1")
     # trainData = dataFrameGen("train.csv")
 
     stores = initiliaze_list_of_stores()
     trainData = normalize_department_sales(trainData, stores)
 
     stores = read_store_objects_pickle()
-
     stores = sales_mapping_to_store_objects(trainData, stores)
-
-    pickle_items(stores, "store_objects_step2_pickled")
-
     stores = fill_objects_with_historical_features(featuresData, stores)
-
-    pickle_items(stores, "store_objects_step3_pickled")
-
     stores = set_store_params(storesData, stores)
-
-    pickle_items(stores, "store_objects_step4_pickled")
-
     stores = fill_stores_with_regression_data(trainData, stores)
 
-    pickle_items(stores, "store_objects_step5_pickled")
+    pickle_store_objects(stores)
 
-    # pickle_store_objects(stores)
     data['train'] = trainData
-
     pickle_data_to_path(SAMS_PICKLED_DATA_PATH, data)
 
 
@@ -95,39 +90,38 @@ def add_features_and_normalize_train_data(trainData: pd.DataFrame) -> pd.DataFra
     return trainData
 
 
+#Reading in all of the data provided by walmart
 data = read_pickled_data_from_path(["test", "stores", "train", "future_features"], SAMS_PICKLED_DATA_PATH)
 testData = data["test"]
 trainData = data["train"]
 storesData = data["stores"]
 futureFeaturesData = data["future_features"]
 
+
+#This "recreate_stores" performs all of the varous steps for constructing the "store" objects that contain historical
+#data If these stores have already been created (and pickled), then only the following line of code (read_pikcled_file) is needed.
 # recreate_stores()
-# predictionsSet = PredictionsSet(testData)
-# pickle_items(predictionsSet, "predictions_set_pickled")
+historicalStores = read_pickled_file("store_objects_pickled")
 
 
-# testData = dataFrameGen("test.csv")
-# pickle_items(testData, "test_pickled")
+
+#uncomment this set of lines if you want to recreate the future store objects
 # futureStoreSet = FutureStoreSet(testData)
-
-
-# futureStoreSet = FutureStoreSet(testData)
-# pickle_items(futureStoreSet, "future_store_set_1_pickled")
-#
 # historicalStores = read_pickled_file("store_objects_pickled")
 # futureStoreSet.fill_stores_with_features_data(futureFeaturesData)
-# pickle_items(futureStoreSet, "future_store_set_2_pickled")
+# pickle_items(futureStoreSet, "future_store_set_pickled")
+
+# uncomment this line if you have already created and pickled the future store objects
+futureStoreSet = read_pickled_file("future_store_set_pickled")
 
 
 
-historicalStores = read_pickled_file("store_objects_pickled")
-futureStoreSet = read_pickled_file("future_store_set_2_pickled")
+# One of these lines should be uncommented to make predictions.
 futureStoreSet.make_predictions_with_weighted_average_of_methods(historicalStores)
-pickle_items(futureStoreSet, "future_store_set_3_pickled")
+# futureStoreSet.make_predictions_no_nulls_handling(historicalStores)
+# futureStoreSet.make_predictions_sequential_methods(historicalStores)
+
+
+# Uncomment these lines depending on the output you one (ok to run both if desired).
 futureStoreSet.write_missing_predictions_to_files()
-
-
-futureStoreSet = read_pickled_file("future_store_set_3_pickled")
 futureStoreSet.write_predictions_to_kaggle_file()
-
-

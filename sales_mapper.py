@@ -15,7 +15,7 @@ from scipy import average
 
 from constants import *
 from read_data_functions import *
-from sams_work.oop_objects import Store
+
 
 def read_pickled_data() -> dict:
     dataDict = {}

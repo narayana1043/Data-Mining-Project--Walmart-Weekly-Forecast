@@ -17,7 +17,7 @@ STORES_RANGE = range(1, NUM_STORES + 1)
 DEPTS_RANGE = range(1, NUM_DEPTS + 1)
 WEEKS_RANGE = range(1, NUM_WEEKS + 1)
 
-SAMS_PICKLED_DATA_PATH = "sams_work/pickled_data/"
+SAMS_PICKLED_DATA_PATH = "pickled_data/"
 
 DATA_PATH = "data/"
 DATA_FILE_NAMES = ["stores.csv", "historical_features.csv", "future_features.csv", "train.csv", "test.csv"]

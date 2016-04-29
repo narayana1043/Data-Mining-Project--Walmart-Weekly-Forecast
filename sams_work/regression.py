@@ -1,10 +1,7 @@
-from pandas.stats.api import ols
-import statsmodels.api as sm
-from sales_mapper import *
+
 from sams_work.oop_objects import *
 from utilities import *
-from scipy.stats import pearsonr
-import numpy
+
 
 def add_features_to_train_data(stores: list, trainData: pd.DataFrame) -> pd.DataFrame:
 
@@ -38,16 +35,17 @@ def normalize_department_sales(trainData: pd.DataFrame, stores: list) -> pd.Data
         print("Store ", storeNum)
         storeDataFrame = get_store_rows(trainData, storeNum)
         for deptNum in DEPTS_RANGE:
-            # print("Dept ", deptNum)
+
             deptDataFrame = get_dept_rows(storeDataFrame, deptNum)
             dataFrameLength = len(deptDataFrame)
+
             if dataFrameLength == 0:
                 continue
-            # deptDataFrame['Normalized_Weekly_Sales'] = min_max_scaler.fit_transform(deptDataFrame['Weekly_Sales'].reshape(-1,1))
+
             deptAverage = average(deptDataFrame['Weekly_Sales'])
             deptStd = deptDataFrame['Weekly_Sales'].std()
 
-            if dataFrameLength == 1 or deptStd == 0:
+            if dataFrameLength == 1:
                 deptStd = 0
                 deptDataFrame['Normalized_Weekly_Sales'] = 0
             else:
@@ -82,7 +80,7 @@ def calculate_and_print_correlations(trainData: pd.DataFrame):
                 if len(deptDataFrame) > 19:
                     model = ols(y=deptDataFrame['Normalized_Weekly_Sales'], x=deptDataFrame[independentColumn])
                     r2Value = model.r2
-                    if r2Value > 0.5:
+                    if r2Value > 0:
                         files[independentColumn].write("Store, " + str(storeNum) + " Dept, " + str(deptNum) + " Length, " + str(len(deptDataFrame)) + " R2, " + str(r2Value) + "\n")
 
 def fill_stores_with_regression_data(trainData: pd.DataFrame, stores: list) -> list:

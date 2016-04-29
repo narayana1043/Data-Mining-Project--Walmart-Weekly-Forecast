@@ -181,6 +181,42 @@ class FutureStoreSet:
             self.futureStores[storeNum] = FutureStore(storeNum)
             self.futureStores[storeNum].fill_with_test_data(storeData)
 
+    def make_predictions_no_nulls_handling(self, historicalStores: list):
+        for storeNum in STORES_RANGE:
+            historicalStore = historicalStores[storeNum]
+            futureStore = self.futureStores[storeNum]
+
+            for deptNum in DEPTS_RANGE:
+                historicalDept = historicalStore.departments[deptNum]
+                futureDept = futureStore.departments[deptNum]
+
+                for futureAbsWeekNum in WEEKS_RANGE_FUTURE:
+                    futureWeek = futureDept.futureWeeks[futureAbsWeekNum]
+
+                    if futureWeek == None:
+                        continue
+
+                    predictedNormalizedSale = float('nan')
+
+                    try:
+                        predictedNormalizedSale = historicalStore.get_average_for_future_week(futureWeek)
+                        predictionMethod = "AAW"  # AAW = Average of Adjacent Weeks (i.e. +/- 2 weeks)
+                    except UnableToCalculateAverageError:
+                        predictionMethod = "SetToZero"
+                        # continue
+                        # predictedNormalizedSale = 0
+
+                    if math.isnan(historicalDept.deptSalesStd):
+                        historicalDept.deptSalesStd = 0
+
+                    if (math.isnan(predictedNormalizedSale)):
+                        futureWeek.predictedSales = float('nan')
+                    else:
+                        futureWeek.predictedSales = historicalDept.deptSalesAverage + predictedNormalizedSale * historicalDept.deptSalesStd
+
+                    futureWeek.predictionMethod = predictionMethod
+
+
     def make_predictions_sequential_methods(self, historicalStores: list):
 
         for storeNum in STORES_RANGE:
@@ -242,6 +278,7 @@ class FutureStoreSet:
         R2_THRESH = 0.5
         MIN_NUM_DATA_POINTS = 40
         MAX_REGRESSION_WEIGHT = 10
+        USE_REGRESSION_PREDICTIONS = False
 
         for storeNum in STORES_RANGE:
             print("Store, " + str(storeNum))
@@ -286,31 +323,24 @@ class FutureStoreSet:
                     except UnableToCalculateAverageError:
                         pass
 
-                    for independentVarName in historicalDept.regressionFitsSet.regressionFits:
-                        try:
-                            regressionFit = historicalDept.regressionFitsSet.get_regression_fit(MIN_NUM_DATA_POINTS, R2_THRESH, independentVarName)
-                            regressionFitWeight = regressionFit.r2Value * MAX_REGRESSION_WEIGHT
-                            futureWeekFeatureValue = futureStore.get_feature_value(futureWeek.absoluteWeekNum, independentVarName)
-                            weightedSalesProductSum = (futureWeekFeatureValue * regressionFit.slope + regressionFit.intercept) * regressionFitWeight
-                            # weightedSalesProductSum = (futureStore.weekFeatureSets[futureWeek.absoluteWeekNum].features[independentVarName] * regressionFit.slope + regressionFit.intercept) * regressionFitWeight
+                    if USE_REGRESSION_PREDICTIONS:
+                        for independentVarName in historicalDept.regressionFitsSet.regressionFits:
+                            try:
+                                regressionFit = historicalDept.regressionFitsSet.get_regression_fit(MIN_NUM_DATA_POINTS, R2_THRESH, independentVarName)
+                                regressionFitWeight = regressionFit.r2Value * MAX_REGRESSION_WEIGHT
+                                futureWeekFeatureValue = futureStore.get_feature_value(futureWeek.absoluteWeekNum, independentVarName)
+                                weightedSalesProductSum = (futureWeekFeatureValue * regressionFit.slope + regressionFit.intercept) * regressionFitWeight
 
-                            if math.isnan(weightedSalesProductSum):
-                                b = 5
-                            weightingsSum += regressionFitWeight
-                        except (UnacceptableFitError, NoFeatureValueAvailableError):
-                            pass
+                                weightingsSum += regressionFitWeight
+                            except (UnacceptableFitError, NoFeatureValueAvailableError):
+                                pass
 
                     # remove these two lines after rerunning normalization with revised std calc
                     if math.isnan(historicalDept.deptSalesStd):
                         historicalDept.deptSalesStd = 0
 
                     predictedNormalizedSale = weightedSalesProductSum / weightingsSum
-
                     futureWeek.predictedSales = historicalDept.deptSalesAverage + predictedNormalizedSale * historicalDept.deptSalesStd
-
-                    if math.isnan(futureWeek.predictedSales):
-                        b = 5
-
                     futureWeek.predictionMethod = predictionMethod
 
     def write_missing_predictions_to_files(self):

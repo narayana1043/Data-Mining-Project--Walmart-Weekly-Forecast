@@ -1,18 +1,9 @@
+from enum import Enum
 
 import numpy
 from pandas.stats.api import ols
-import pandas as pd
-import re
-import os
-from datetime import datetime
-from scipy import average
-from constants import *
-import threading
-import math
-import pickle
-from sams_work.predictions_set_object import *
 
-from enum import Enum
+from sams_work.predictions_set_object import *
 
 featureStringToNum = {
     "Temperature": 0,
@@ -152,7 +143,7 @@ class Dept:
 
     def set_weekly_sales_averages(self, deptDataFrame):
         for weekNum in range(1, NUM_WEEKS + 1):
-            weekDataFrame = deptDataFrame[abs(deptDataFrame["WeekNum"] - weekNum) < 3]
+            weekDataFrame = deptDataFrame[abs(deptDataFrame["WeekNum"] - weekNum) < 2]
             self.weekSaleAverages[weekNum].set_sale_averages(weekDataFrame)
 
     def set_dept_avg_and_std(self, deptAvg: float, deptStd: float):
@@ -162,8 +153,9 @@ class Dept:
     def get_average_for_future_week(self, futureWeek: FutureWeek) -> float:
         return self.weekSaleAverages[futureWeek.weekNum].get_average_for_future_week(futureWeek)
 
-weightings = {-2: 10, -1: 20, 0: 40, 1: 20, 2: 10}
-
+# weightings = {-2: 10, -1: 20, 0: 40, 1: 20, 2: 10}
+weekOffsetWeightings = {-1: 0.5, 0: 1, 1: 0.5}
+yearWeightings = {2010: 2, 2011: 10, 2012: 50}
 
 class WeekSaleAverage:
     numDoublesWithLowSampleSize = 0
@@ -179,11 +171,18 @@ class WeekSaleAverage:
         weightedSalesProduct = 0
         totalWeighting = 0
 
-        for relativeIndex in weightings.keys():
-            averageNormalizedSales = average(dataFrame[dataFrame["WeekNum"] == (self.weekNum + relativeIndex)]["Normalized_Weekly_Sales"])
-            if not math.isnan(averageNormalizedSales):
-                weightedSalesProduct += averageNormalizedSales * weightings[relativeIndex]
-                totalWeighting += weightings[relativeIndex]
+        # for relativeIndex in weightings.keys():
+        #     averageNormalizedSales = average(dataFrame[dataFrame["WeekNum"] == (self.weekNum + relativeIndex)]["Normalized_Weekly_Sales"])
+        #     if not math.isnan(averageNormalizedSales):
+        #         weightedSalesProduct += averageNormalizedSales * weightings[relativeIndex]
+        #         totalWeighting += weightings[relativeIndex]
+
+        for index, record in dataFrame.iterrows():
+            weekOffset = record["WeekNum"] - self.weekNum
+            weighting = weekOffsetWeightings[weekOffset] + yearWeightings[record['Year']]
+
+            weightedSalesProduct += record["Normalized_Weekly_Sales"] * weighting
+            totalWeighting += weighting
         try:
             return weightedSalesProduct / totalWeighting
         except ZeroDivisionError:
@@ -210,18 +209,6 @@ class WeekSaleAverage:
             return self.get_sales_value_or_raise_error(self.holidayNormalizedSalesAverage)
         else:
             return self.get_sales_value_or_raise_error(self.nonHolidayNormalizedSalesAverage)
-
-#
-# class StoreSet:
-#     def __init__(self):
-#         self.stores = [None] * (NUM_STORES + 1)
-#
-#     def pickle(self):
-#         with open((SAMS_PICKLED_DATA_PATH + "store_set_pickled"), 'wb') as f:
-#             pickle.dump(self, f)
-#
-#     def set_store(self, storeNum: int, store: Store):
-#         self.stores[storeNum] = store
 
 class StoreParams:
 
