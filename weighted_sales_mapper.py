@@ -18,15 +18,14 @@ def weightedAverage(salesWeeklyDeptStoreTrainData,weekNum):
         denominator = 0
         for weekNumDiff in range(weekWindow):
             weekNumDiffSales = salesWeeklyDeptStoreTrainData[abs(salesWeeklyDeptStoreTrainData["WeekNum"] - weekNum) == weekNumDiff].Weekly_Sales
-            #print(salesWeeklyDeptStoreTrainData[abs(salesWeeklyDeptStoreTrainData["WeekNum"] - weekNum) == weekNumDiff])
             try:
                 histWeekDiffSalesWeights.append(1/(2*weekNumDiff))
                 histWeekDiffSalesLen.append(len(weekNumDiffSales))
-                histWeekDiffSales.append(histWeekDiffSalesWeights[weekNumDiff]*sum(weekNumDiffSales))
+                histWeekDiffSales.append(histWeekDiffSalesWeights[weekNumDiff]*(weekNumDiffSales))
             except ZeroDivisionError:
-                histWeekDiffSalesWeights.append(2)
+                histWeekDiffSalesWeights.append(1)
                 histWeekDiffSalesLen.append(len(weekNumDiffSales))
-                histWeekDiffSales.append(2*sum(weekNumDiffSales))
+                histWeekDiffSales.append(sum(weekNumDiffSales))
 
         for weekNumDiff in range(weekWindow):
             numerator += sum(histWeekDiffSales[weekNumDiff])
@@ -72,6 +71,6 @@ def sales_mapping() -> list:
 # weekWindow = int(input("Please Enter the week window length"))
 # sales_mapping()
 
-for i in range(2,3):
+for i in range(6,8):
     weekWindow =i
     sales_mapping()
